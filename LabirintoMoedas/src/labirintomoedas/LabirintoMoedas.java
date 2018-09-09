@@ -23,6 +23,7 @@ public class LabirintoMoedas {
         
         LabirintoMoedas lab = new LabirintoMoedas();
         lab.geraParedao();
+        lab.geraMuros();
         lab.desenhaAmbiente();
         
     }
@@ -80,29 +81,52 @@ public class LabirintoMoedas {
         return null;
     }
     
+    /**
+     * Gera o paredão onde se encontra a porta
+     */
     public void geraParedao(){
         int parede = rand.nextInt(4);
         System.out.println("Parede "+parede);
         switch(parede){
             case 0:
-                for(int i=0;i<10;i++)
+                for(int i=0;i<n;i++)
                     listaElementos.add(new Elemento(TipoElemento.Parede, i, 0, i));
                 break;
             case 1:
-                for(int i=0;i<10;i++)
+                for(int i=0;i<n;i++)
                     listaElementos.add(new Elemento(TipoElemento.Parede, i, i, 0));
                 break;
             case 2:
-                for(int i=0;i<10;i++)
-                    listaElementos.add(new Elemento(TipoElemento.Parede, i, 9, i));
+                for(int i=0;i<n;i++)
+                    listaElementos.add(new Elemento(TipoElemento.Parede, i, n-1, i));
                 break;
             case 3:
-                for(int i=0;i<10;i++)
-                    listaElementos.add(new Elemento(TipoElemento.Parede, i, i, 9));
+                for(int i=0;i<n;i++)
+                    listaElementos.add(new Elemento(TipoElemento.Parede, i, i, n-1));
                 break;
         }
-        int porta = rand.nextInt(10);
+        int porta = rand.nextInt(n);
         listaElementos.get(porta).setTipo(TipoElemento.Porta);
+    }
+    
+    
+    public void geraMuros(){
+        for(int p=0;p<4;p++){
+            int posicao = rand.nextInt(2); // 0 - vertical, 1 - horizontal
+            if(posicao == 0){
+                int y = rand.nextInt(n-5);
+                int x = rand.nextInt(n-1);
+                for(int i=y;(i-y < 5);i++){
+                    listaElementos.add(new Elemento(TipoElemento.Parede, i, x, i));
+                }
+            }else{
+                int y = rand.nextInt(n-1);
+                int x = rand.nextInt(n-5);
+                for(int i=x;i-x<5;i++){
+                    listaElementos.add(new Elemento(TipoElemento.Parede, i, i, y));
+                }
+            }
+        }
     }
     
     /**
