@@ -14,7 +14,9 @@ import java.util.Random;
  */
 public class LabirintoMoedas {
 
-    public static ArrayList<Elemento> listaElementos = new ArrayList<>();
+    public ArrayList<Elemento> listaElementos = new ArrayList<>();
+    public Elemento porta;
+    private int ladoPorta;
     private final int n = 10;
     private Random rand = new Random();
     
@@ -24,6 +26,9 @@ public class LabirintoMoedas {
         LabirintoMoedas lab = new LabirintoMoedas();
         lab.geraParedao();
         lab.geraMuros();
+        lab.geraBuracos();
+        lab.geraBaus();
+        lab.geraSacos();
         lab.desenhaAmbiente();
         
     }
@@ -85,7 +90,8 @@ public class LabirintoMoedas {
      * Gera o paredão onde se encontra a porta
      */
     public void geraParedao(){
-        int parede = rand.nextInt(4);
+        int parede = rand.nextInt(4); //escolhe em qual lado vai o paredão
+        ladoPorta = parede;
         System.out.println("Parede "+parede);
         switch(parede){
             case 0:
@@ -105,27 +111,111 @@ public class LabirintoMoedas {
                     listaElementos.add(new Elemento(TipoElemento.Parede, i, i, n-1));
                 break;
         }
-        int porta = rand.nextInt(n);
+        int porta = rand.nextInt(n-2)+1;
         listaElementos.get(porta).setTipo(TipoElemento.Porta);
+        this.porta = listaElementos.get(porta);
     }
     
-    
+    /**
+     * Gera os muros internos do mapa
+     */
     public void geraMuros(){
+        int x,y;
+        boolean ok = true;
         for(int p=0;p<4;p++){
             int posicao = rand.nextInt(2); // 0 - vertical, 1 - horizontal
-            if(posicao == 0){
-                int y = rand.nextInt(n-5);
-                int x = rand.nextInt(n-1);
+            if(posicao == 0){ //Vertical
+                do{
+                    ok=true;
+                    y = rand.nextInt(n-5);
+                    x = rand.nextInt(n-1);
+                    for(int i=y;(i-y < 5);i++){
+                        if(!isLivre(x,i) || isColadoParedao(x, i, 0)){
+                            ok = false;
+                            break;
+                        }
+                    }
+                    
+                }while(!ok);
                 for(int i=y;(i-y < 5);i++){
                     listaElementos.add(new Elemento(TipoElemento.Parede, i, x, i));
                 }
-            }else{
-                int y = rand.nextInt(n-1);
-                int x = rand.nextInt(n-5);
+            }else{ // Horizontal
+                do{
+                    ok=true;
+                    y = rand.nextInt(n-1);
+                    x = rand.nextInt(n-5);
+                    for(int i=x;i-x<5;i++){
+                        if(!isLivre(i,y) || isColadoParedao(i, y, 1)){
+                            ok = false;
+                            break;
+                        }
+                    }
+                    
+                }while(!ok);
                 for(int i=x;i-x<5;i++){
                     listaElementos.add(new Elemento(TipoElemento.Parede, i, i, y));
                 }
             }
+        }
+    }
+    
+    /**
+     * Gera os buracos do mapa
+     */
+    public void geraBuracos(){
+        for(int i=0;i<4;i++){
+            int y = rand.nextInt(n);
+            int x = rand.nextInt(n);
+            listaElementos.add(new Elemento(TipoElemento.Buraco, i, x, y));
+        }
+    }
+    
+    /**
+     * Gera os baus do mapa
+     */
+    public void geraBaus(){
+        
+        
+        for(int i=0;i<4;i++){
+            int y,x;
+            
+            if (this.porta.getX() == 0) {
+                do{
+                    y = rand.nextInt(n);
+                }while(!isLivre(1, y));
+                listaElementos.add(new Elemento(TipoElemento.Bau, i, 1, y));
+
+            } else if (this.porta.getX() == 9) {
+                do{
+                    y = rand.nextInt(n);
+                }while(!isLivre(8,y));
+                listaElementos.add(new Elemento(TipoElemento.Bau, i, 8, y));
+
+            } else if (this.porta.getY() == 0) {
+                do{
+                    x = rand.nextInt(n);
+                }while(!isLivre(x,0));
+                listaElementos.add(new Elemento(TipoElemento.Bau, i, x, 0));
+
+            } else if (this.porta.getY() == 9) {
+                do{
+                    x = rand.nextInt(n);
+                }while(!isLivre(x,8));
+                listaElementos.add(new Elemento(TipoElemento.Bau, i, x, 8));
+
+            }
+        }
+    }
+    
+    /**
+     * Gera sacos de moedas no mapa
+     */
+    public void geraSacos(){
+        for(int i=0;i<7;i++){
+            int y = rand.nextInt(n);
+            int x = rand.nextInt(n);
+            listaElementos.add(new Elemento(TipoElemento.Saco, i, x, y));
         }
     }
     
@@ -151,16 +241,42 @@ public class LabirintoMoedas {
         for(int i=0;i<listaElementos.size();i++){
             e  = listaElementos.get(i);
             if(e.getX() == x && e.getY() == y){
-                if(e.getTipo() == TipoElemento.Bau || e.getTipo() == TipoElemento.Saco){
-                    return true;
-                }else{
-                    return false;
-                }
+                
+                return false;
+                
             }
         }
         if(x < 0 || y < 0 || x >= n || y >= n)
             return false;
         return true;
+    }
+    
+    public boolean isColadoParedao(int x, int y, int sentido){
+        
+        switch(ladoPorta){
+            case 0:
+                if(sentido == 0 && x == 1){
+                    return true;
+                }
+                break;
+            case 1:
+                if(sentido == 1 && y == 1){
+                    return true;
+                }
+                break;
+            case 2:
+                if(sentido == 0 && x == 8){
+                    return true;
+                }
+                break;
+            case 3:
+                if(sentido == 1 && y == 8){
+                    return true;
+                }
+                break;
+        }
+        
+        return false;
     }
     
 }
