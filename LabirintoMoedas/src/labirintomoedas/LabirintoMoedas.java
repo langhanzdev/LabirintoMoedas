@@ -17,6 +17,7 @@ public class LabirintoMoedas {
     public ArrayList<Elemento> listaElementos = new ArrayList<>();
     public Elemento porta;
     private int ladoPorta;
+    private Agente agente;
     private final int n = 10;
     private Random rand = new Random();
     
@@ -24,11 +25,13 @@ public class LabirintoMoedas {
         
         
         LabirintoMoedas lab = new LabirintoMoedas();
+        lab.agente = new Agente();
         lab.geraParedao();
         lab.geraMuros();
         lab.geraBuracos();
         lab.geraBaus();
         lab.geraSacos();
+        lab.geraAgente();
         lab.desenhaAmbiente();
         
     }
@@ -41,6 +44,9 @@ public class LabirintoMoedas {
         for(int y=0;y<this.n;y++){
             for(int x=0;x<this.n;x++){
                 e = temElemento(x,y);
+                if(agente.getX() == x && agente.getY() == y){
+                    System.out.print("[A]");
+                }else
                 if(e != null){
                     if(e.getTipo() == TipoElemento.Parede){
                         System.out.print("[#]");
@@ -52,7 +58,7 @@ public class LabirintoMoedas {
                                 System.out.print("[X]");
                             }else{
                                 if(e.getTipo() == TipoElemento.Saco){
-                                    System.out.print("[S]");
+                                    System.out.print("[$]");
                                 }else{
                                     if(e.getTipo() == TipoElemento.Porta){
                                         System.out.print("[P]");
@@ -164,11 +170,40 @@ public class LabirintoMoedas {
      * Gera os buracos do mapa
      */
     public void geraBuracos(){
+        int x,y;
         for(int i=0;i<4;i++){
-            int y = rand.nextInt(n);
-            int x = rand.nextInt(n);
+            do{
+            y = rand.nextInt(n);
+            x = rand.nextInt(n);
+            }while(!isLivre(x, y));
             listaElementos.add(new Elemento(TipoElemento.Buraco, i, x, y));
         }
+    }
+    
+    /**
+     * Gera a posicao inicial do agente
+     */
+    public void geraAgente(){
+        int x,y;      
+        do{
+            y = rand.nextInt(n);
+            x = rand.nextInt(n);
+        }while(!isLivre(x, y) || !temSaida(x, y));
+        agente.setX(x);
+        agente.setY(y);
+        
+    }
+    
+    /**
+     * Verifica se tem saida na posicao atual
+     * @param x
+     * @param y
+     * @return true se tiver saida
+     */
+    public boolean temSaida(int x, int y){
+        if(!isLivre(x-1,y) && !isLivre(x+1,y) && !isLivre(x,y-1) && !isLivre(x,y+1))
+            return false;
+        return true;
     }
     
     /**
@@ -212,9 +247,12 @@ public class LabirintoMoedas {
      * Gera sacos de moedas no mapa
      */
     public void geraSacos(){
+        int x,y;
         for(int i=0;i<7;i++){
-            int y = rand.nextInt(n);
-            int x = rand.nextInt(n);
+            do{
+            y = rand.nextInt(n);
+            x = rand.nextInt(n);
+            }while(!isLivre(x, y));
             listaElementos.add(new Elemento(TipoElemento.Saco, i, x, y));
         }
     }
@@ -236,6 +274,12 @@ public class LabirintoMoedas {
         return false;
     }
     
+    /**
+     * retorna se a posicao está livre
+     * @param x
+     * @param y
+     * @return true se está livre
+     */
     public boolean isLivre(int x, int y){
         Elemento e;
         for(int i=0;i<listaElementos.size();i++){
@@ -251,6 +295,13 @@ public class LabirintoMoedas {
         return true;
     }
     
+    /**
+     * returna se a posicao está colada com o paredao
+     * @param x
+     * @param y
+     * @param sentido
+     * @return true se está colada com o paredao
+     */
     public boolean isColadoParedao(int x, int y, int sentido){
         
         switch(ladoPorta){
@@ -279,6 +330,13 @@ public class LabirintoMoedas {
         return false;
     }
     
+    /**
+     * retorna se a posicao está na frente da porta
+     * @param x
+     * @param y
+     * @param sentido
+     * @return true se está na frente da porta
+     */
     public boolean isFrentePorta(int x, int y, int sentido){
         
         switch(ladoPorta){
