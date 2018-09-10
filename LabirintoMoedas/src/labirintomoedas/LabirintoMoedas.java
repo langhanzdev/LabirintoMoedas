@@ -130,7 +130,7 @@ public class LabirintoMoedas {
                     y = rand.nextInt(n-5);
                     x = rand.nextInt(n-1);
                     for(int i=y;(i-y < 5);i++){
-                        if(!isLivre(x,i) || isColadoParedao(x, i, 0)){
+                        if(!isLivre(x,i) || isColadoParedao(x, i, 0) || isFrentePorta(x,i,0)){
                             ok = false;
                             break;
                         }
@@ -146,7 +146,7 @@ public class LabirintoMoedas {
                     y = rand.nextInt(n-1);
                     x = rand.nextInt(n-5);
                     for(int i=x;i-x<5;i++){
-                        if(!isLivre(i,y) || isColadoParedao(i, y, 1)){
+                        if(!isLivre(i,y) || isColadoParedao(i, y, 1) || isFrentePorta(i,y,1)){
                             ok = false;
                             break;
                         }
@@ -271,6 +271,34 @@ public class LabirintoMoedas {
                 break;
             case 3:
                 if(sentido == 1 && y == 8){
+                    return true;
+                }
+                break;
+        }
+        
+        return false;
+    }
+    
+    public boolean isFrentePorta(int x, int y, int sentido){
+        
+        switch(ladoPorta){
+            case 0:
+                if(sentido == 1 && x == 1){
+                    return true;
+                }
+                break;
+            case 1:
+                if(sentido == 0 && y == 1){
+                    return true;
+                }
+                break;
+            case 2:
+                if(sentido == 1 && x == 8){
+                    return true;
+                }
+                break;
+            case 3:
+                if(sentido == 0 && y == 8){
                     return true;
                 }
                 break;
