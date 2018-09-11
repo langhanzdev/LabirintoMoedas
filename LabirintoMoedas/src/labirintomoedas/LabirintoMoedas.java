@@ -14,14 +14,14 @@ import java.util.Random;
  */
 public class LabirintoMoedas {
 
-    public ArrayList<Elemento> listaElementos = new ArrayList<>();
+    public static ArrayList<Elemento> listaElementos = new ArrayList<>();
     public Elemento porta;
     private int ladoPorta;
     private Agente agente;
-    private final int n = 10;
+    public static final int n = 10;
     private Random rand = new Random();
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         
         
         LabirintoMoedas lab = new LabirintoMoedas();
@@ -32,7 +32,11 @@ public class LabirintoMoedas {
         lab.geraBaus();
         lab.geraSacos();
         lab.geraAgente();
-        lab.desenhaAmbiente();
+        for(int i=0;i<50;i++){
+            lab.agente.anda();
+            lab.desenhaAmbiente();
+            Thread.sleep(500);
+        }
         
     }
     
@@ -280,7 +284,7 @@ public class LabirintoMoedas {
      * @param y
      * @return true se está livre
      */
-    public boolean isLivre(int x, int y){
+    public static boolean isLivre(int x, int y){
         Elemento e;
         for(int i=0;i<listaElementos.size();i++){
             e  = listaElementos.get(i);

@@ -1,6 +1,8 @@
 package labirintomoedas;
 
 import java.util.ArrayList;
+import java.util.Random;
+import static labirintomoedas.LabirintoMoedas.listaElementos;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -16,17 +18,105 @@ public class Agente {
     
     private int x;
     private int y;
+    private int direcao;
     private ArrayList<Elemento> listaElementos;
 
     public Agente(int x, int y) {
         this.x = x;
         this.y = y;
         this.listaElementos = listaElementos;
+        this.direcao = 0;
     }
 
     public Agente() {
+        this.listaElementos = listaElementos;
+        this.direcao = 0;
     }
     
+    public void anda(){
+        switch(getDirecao()){
+                case 0:
+                    if(isLivre(getX(), getY()+1)){
+                        
+                        
+                        setY(getY()+1);
+                    }else{
+                        setDirecao(novaDirecao());
+                    }
+                    break;
+                case 1:
+                    if(isLivre(getX()+1, getY())){
+                        
+                       
+                        setX(getX()+1);
+                    }else{
+                        setDirecao(novaDirecao());
+                    }
+                    break;
+                case 2:
+                    if(isLivre(getX(), getY()-1)){
+                        
+                        
+                        setY(getY()-1);
+                    }else{
+                        setDirecao(novaDirecao());
+                    }
+                    break;
+                case 3:
+                    if(isLivre(getX()-1, getY())){
+                        
+                        
+                        setX(getX()-1);
+                    }else{
+                        setDirecao(novaDirecao());
+                    }
+                    break;
+            }
+    }
+    
+    /**
+     * Sorteia uma nova direção aleatoria para o agente
+     * @return 
+     */
+    public int novaDirecao(){
+        Random ran = new Random();
+        return ran.nextInt(4);
+    }
+    
+    /**
+     * Retorna se a posicao passada está livre para o agente
+     * seguindo as regras do agente. Ele pode andar sobre baus e sacos de moedas
+     * @param x
+     * @param y
+     * @return 
+     */
+    public static boolean isLivre(int x, int y){
+        Elemento e;
+        for(int i=0;i < LabirintoMoedas.listaElementos.size();i++){
+            e  = LabirintoMoedas.listaElementos.get(i);
+            if(e.getX() == x && e.getY() == y){
+                if(e.getTipo() == TipoElemento.Bau || e.getTipo() == TipoElemento.Saco){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        }
+        if(x < 0 || y < 0 || x >= LabirintoMoedas.n || y >= LabirintoMoedas.n)
+            return false;
+        return true;
+    }
+    
+    
+    //--------------------------------------------------------
+
+    public int getDirecao() {
+        return direcao;
+    }
+
+    public void setDirecao(int direcao) {
+        this.direcao = direcao;
+    }
     
 
     public int getX() {
