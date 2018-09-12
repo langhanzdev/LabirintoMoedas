@@ -24,16 +24,19 @@ public class Agente {
     public Agente(int x, int y) {
         this.x = x;
         this.y = y;
-        this.listaElementos = listaElementos;
+        this.listaElementos = new ArrayList<>();
         this.direcao = 0;
     }
 
     public Agente() {
-        this.listaElementos = listaElementos;
+        this.listaElementos = new ArrayList<>();
         this.direcao = 0;
     }
     
     public void anda(){
+        detetor();
+        System.out.println("Tamanho lista: "+this.listaElementos.size());
+        
         switch(getDirecao()){
                 case 0:
                     if(isLivre(getX(), getY()+1)){
@@ -72,6 +75,52 @@ public class Agente {
                     }
                     break;
             }
+    }
+    
+    public void detetor(){
+        Elemento e;
+        e = temElemento(getX(), getY()+1);
+        addLista(e);
+        e = temElemento(getX(), getY()+2);
+        addLista(e);
+        e = temElemento(getX(), getY()-1);
+        addLista(e);
+        e = temElemento(getX(), getY()-1);
+        addLista(e);
+        e = temElemento(getX()+1, getY());
+        addLista(e);
+        e = temElemento(getX()+2, getY());
+        addLista(e);
+        e = temElemento(getX()-1, getY());
+        addLista(e);
+        e = temElemento(getX()-2, getY());
+        addLista(e);
+        
+    }
+    
+    public void addLista(Elemento e){
+        if(e != null && e.getTipo() != TipoElemento.Parede && !e.isIsAdd()){
+            e.setIsAdd(true);
+            listaElementos.add(e);
+        }
+    }
+    
+    
+    /**
+     * Retorna o elemento que está na posicao passada por parametro
+     * @param x
+     * @param y
+     * @return Elemento da posicao x,y
+     */
+    public Elemento temElemento(int x, int y){
+        Elemento aux;
+        for(int i=0;i<LabirintoMoedas.listaElementos.size();i++){
+            aux  = LabirintoMoedas.listaElementos.get(i);
+            if(aux.getX() == x && aux.getY() == y){
+                return aux;
+            }
+        }
+        return null;
     }
     
     /**

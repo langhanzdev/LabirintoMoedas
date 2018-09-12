@@ -15,12 +15,22 @@ public class Elemento {
     private int id;
     private int x;
     private int y;
+    private boolean isAdd;
 
     public Elemento(TipoElemento tipo, int id, int x, int y) {
         this.tipo = tipo;
         this.id = id;
         this.x = x;
         this.y = y;
+        this.isAdd = false;
+    }
+
+    public boolean isIsAdd() {
+        return isAdd;
+    }
+
+    public void setIsAdd(boolean isAdd) {
+        this.isAdd = isAdd;
     }
 
     public TipoElemento getTipo() {

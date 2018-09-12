@@ -26,13 +26,19 @@ public class LabirintoMoedas {
         
         LabirintoMoedas lab = new LabirintoMoedas();
         lab.agente = new Agente();
+        System.out.println("Criado paredes...");
         lab.geraParedao();
+        System.out.println("Criando muros...");
         lab.geraMuros();
+        System.out.println("Criando buracos...");
         lab.geraBuracos();
+        System.out.println("Criando baus...");
         lab.geraBaus();
+        System.out.println("Criando sacos...");
         lab.geraSacos();
+        System.out.println("Liberando agente...");
         lab.geraAgente();
-        for(int i=0;i<50;i++){
+        for(int i=0;i<2;i++){
             lab.agente.anda();
             lab.desenhaAmbiente();
             Thread.sleep(500);
