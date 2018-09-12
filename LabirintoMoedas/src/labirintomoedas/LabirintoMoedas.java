@@ -28,12 +28,14 @@ public class LabirintoMoedas {
         lab.agente = new Agente();
         System.out.println("Criado paredes...");
         lab.geraParedao();
+        lab.desenhaAmbiente();
+        System.out.println("Criando baus...");
+        lab.geraBaus();
         System.out.println("Criando muros...");
         lab.geraMuros();
         System.out.println("Criando buracos...");
         lab.geraBuracos();
-        System.out.println("Criando baus...");
-        lab.geraBaus();
+        
         System.out.println("Criando sacos...");
         lab.geraSacos();
         System.out.println("Liberando agente...");
@@ -108,7 +110,6 @@ public class LabirintoMoedas {
     public void geraParedao(){
         int parede = rand.nextInt(4); //escolhe em qual lado vai o paredão
         ladoPorta = parede;
-        System.out.println("Parede "+parede);
         switch(parede){
             case 0:
                 for(int i=0;i<n;i++)
@@ -183,8 +184,8 @@ public class LabirintoMoedas {
         int x,y;
         for(int i=0;i<4;i++){
             do{
-            y = rand.nextInt(n);
-            x = rand.nextInt(n);
+                y = rand.nextInt(n);
+                x = rand.nextInt(n);
             }while(!isLivre(x, y));
             listaElementos.add(new Elemento(TipoElemento.Buraco, i, x, y));
         }
@@ -223,6 +224,7 @@ public class LabirintoMoedas {
         
         
         for(int i=0;i<4;i++){
+            
             int y,x;
             
             if (this.porta.getX() == 0) {
@@ -240,8 +242,8 @@ public class LabirintoMoedas {
             } else if (this.porta.getY() == 0) {
                 do{
                     x = rand.nextInt(n);
-                }while(!isLivre(x,0));
-                listaElementos.add(new Elemento(TipoElemento.Bau, i, x, 0));
+                }while(!isLivre(x,1));
+                listaElementos.add(new Elemento(TipoElemento.Bau, i, x, 1));
 
             } else if (this.porta.getY() == 9) {
                 do{
