@@ -93,7 +93,7 @@ public class LabirintoMoedas {
      * @param y
      * @return Elemento da posicao x,y
      */
-    public Elemento temElemento(int x, int y){
+    public static Elemento temElemento(int x, int y){
         Elemento aux;
         for(int i=0;i<listaElementos.size();i++){
             aux  = listaElementos.get(i);
@@ -375,6 +375,10 @@ public class LabirintoMoedas {
         }
         
         return false;
+    }
+    
+    public static int getSize(){
+        return n;
     }
     
 }

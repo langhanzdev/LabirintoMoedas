@@ -156,6 +156,139 @@ public class Agente {
         return true;
     }
     
+     private class Nodo implements Comparable<Nodo>{ 
+        double stepsCost = 0;
+        double heuristicCost = 0; //Heuristic cost
+        double finalCost = 0; //G+H
+        int x, y;
+        Nodo parent; 
+        
+        Nodo(int x, int y){
+            this.x = x;
+            this.y = y; 
+        }
+        
+        public int compareTo(Nodo n){
+            if(this.finalCost < n.finalCost)
+                return -1;
+            else if(this.finalCost > n.finalCost)
+                return 1;
+            return 0;
+        }
+        @Override
+        public String toString(){
+            return "["+this.x+", "+this.y+"]";
+        }
+}
+
+    
+    public Nodo aStar(Ponto inicio, Ponto destino){
+        Nodo atual = null;
+        Nodo comp = null;
+        ArrayList<Nodo> aberto =  new ArrayList<>();
+        ArrayList<Nodo> fechado = new ArrayList<>();
+        Nodo nodo = new Nodo(inicio.x, inicio.y);
+        nodo.finalCost = 0;
+        nodo.heuristicCost = 0;
+        aberto.add(nodo);
+        while(!aberto.isEmpty()){
+            double max_final_cost = Double.MAX_VALUE;
+            for(Nodo n:aberto){
+                if(n.finalCost < max_final_cost){
+                    atual = n;
+                    max_final_cost = n.finalCost;
+                }
+            }
+            aberto.remove(atual);                                       
+            fechado.add(atual);
+            ArrayList<Nodo> sucessor = new ArrayList<>();
+            Elemento elemento;
+            if(atual.x != 0){
+                if(atual.y > 0){
+                    elemento = LabirintoMoedas.temElemento(atual.x-1, atual.y-1);
+                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
+                        sucessor.add(new Nodo(atual.x-1, atual.y-1));
+                }
+                elemento = LabirintoMoedas.temElemento(atual.x - 1, atual.y);
+                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
+                    sucessor.add(new Nodo(atual.x-1, atual.y));
+                if(atual.y < LabirintoMoedas.getSize() -1){
+                    elemento = LabirintoMoedas.temElemento(atual.x - 1, atual.y+1);
+                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
+                        sucessor.add(new Nodo(atual.x-1, atual.y+1));
+                }
+            }
+            if(atual.x < LabirintoMoedas.getSize() -1){
+               if(atual.y > 0){   
+                   elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y - 1);
+                   if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
+                        sucessor.add(new Nodo(atual.x+1, atual.y-1));
+                }
+                elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y);
+                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
+                    sucessor.add(new Nodo(atual.x+1, atual.y));
+                if(atual.y < LabirintoMoedas.getSize() -1){
+                    elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y + 1);
+                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
+                        sucessor.add(new Nodo(atual.x+1, atual.y+1));
+                } 
+            }
+            
+            if(atual.y != 0){
+                elemento = LabirintoMoedas.temElemento(atual.x, atual.y - 1);
+                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
+                    sucessor.add(new Nodo(atual.x, atual.y-1));
+                
+            }
+            
+            if(atual.y < LabirintoMoedas.getSize() -1){
+                elemento = LabirintoMoedas.temElemento(atual.x, atual.y+1);
+                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
+                    sucessor.add(new Nodo(atual.x, atual.y+1));
+            }
+            for(Nodo vizinho: sucessor){
+                vizinho.parent = atual;
+                boolean flag = false;
+                if(destino.equals(new Ponto(vizinho.x, vizinho.y))){
+                    return vizinho;
+                }
+                vizinho.stepsCost = atual.stepsCost + 1;
+                vizinho.heuristicCost = this.diagonalDistace(new Ponto(vizinho.x,vizinho.y), destino);
+                vizinho.finalCost = vizinho.stepsCost + vizinho.heuristicCost;
+                for(Nodo n : aberto){
+                    if(n.x == vizinho.x && n.y == vizinho.y){
+                        if(n.finalCost > vizinho.finalCost){
+                            n.parent = vizinho.parent;
+                            n.finalCost = vizinho.finalCost;
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+                for(Nodo n : fechado){
+                    if(n.x == vizinho.x && n.y == vizinho.y){
+                        if(n.finalCost > vizinho.finalCost){
+                            aberto.add(vizinho);
+                            flag = true;
+                        }
+                    }
+                }
+                if(flag == false){
+                    aberto.add(vizinho);
+}
+                
+            } 
+        }
+        return null;
+}
+    
+    public double diagonalDistace(Ponto start, Ponto end){
+        double dx = Math.abs(start.x - end.x);
+        double dy = Math.abs(start.y - end.y);
+        return (1 *(dx + dy) + (Math.sqrt(2) - 2 * 1) * Math.min(dx, dy));
+    }
+
+    
     
     //--------------------------------------------------------
 
