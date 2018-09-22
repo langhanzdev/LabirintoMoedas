@@ -381,4 +381,12 @@ public class LabirintoMoedas {
         return n;
     }
     
+    public static Elemento getPorta(){
+        for(Elemento e:listaElementos){
+            if(e.getTipo() == TipoElemento.Porta)
+                return e;
+        }
+        return null;
+    }
+    
 }

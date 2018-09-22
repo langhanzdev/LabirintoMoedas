@@ -36,8 +36,24 @@ public class Agente {
     public void anda(){
         detetor();
         System.out.println("Tamanho lista: "+this.listaElementos.size());
+        Nodo caminho, melhorCaminho;
+        double valorCaminho = Double.MAX_VALUE;
+        Ponto p = new Ponto(LabirintoMoedas.getPorta().getX(),LabirintoMoedas.getPorta().getY());
+        System.out.println("inicio caminho");
+        caminho = this.aStar(new Ponto(this.x, this.y), p);
+        System.out.println("valor caminho: " + caminho.parent.finalCost);
+        if (caminho.parent.finalCost < valorCaminho) {
+            valorCaminho = caminho.parent.finalCost;
+            melhorCaminho = caminho;
+        }
+        while (caminho.parent != null) {
+            System.out.println(caminho.toString());
+            caminho = caminho.parent;
+        }
+        System.out.println("final caminho");
         
         switch(getDirecao()){
+//        switch(getDirecao()){
                 case 0:
                     if(isLivre(getX(), getY()+1)){
                         
@@ -206,44 +222,44 @@ public class Agente {
             if(atual.x != 0){
                 if(atual.y > 0){
                     elemento = LabirintoMoedas.temElemento(atual.x-1, atual.y-1);
-                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
+                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
                         sucessor.add(new Nodo(atual.x-1, atual.y-1));
                 }
                 elemento = LabirintoMoedas.temElemento(atual.x - 1, atual.y);
-                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
                     sucessor.add(new Nodo(atual.x-1, atual.y));
                 if(atual.y < LabirintoMoedas.getSize() -1){
                     elemento = LabirintoMoedas.temElemento(atual.x - 1, atual.y+1);
-                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
+                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
                         sucessor.add(new Nodo(atual.x-1, atual.y+1));
                 }
             }
             if(atual.x < LabirintoMoedas.getSize() -1){
                if(atual.y > 0){   
                    elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y - 1);
-                   if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
+                   if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
                         sucessor.add(new Nodo(atual.x+1, atual.y-1));
                 }
                 elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y);
-                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
                     sucessor.add(new Nodo(atual.x+1, atual.y));
                 if(atual.y < LabirintoMoedas.getSize() -1){
                     elemento = LabirintoMoedas.temElemento(atual.x + 1, atual.y + 1);
-                    if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
+                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
                         sucessor.add(new Nodo(atual.x+1, atual.y+1));
                 } 
             }
             
             if(atual.y != 0){
                 elemento = LabirintoMoedas.temElemento(atual.x, atual.y - 1);
-                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
                     sucessor.add(new Nodo(atual.x, atual.y-1));
                 
             }
             
             if(atual.y < LabirintoMoedas.getSize() -1){
                 elemento = LabirintoMoedas.temElemento(atual.x, atual.y+1);
-                if((elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
                     sucessor.add(new Nodo(atual.x, atual.y+1));
             }
             for(Nodo vizinho: sucessor){
