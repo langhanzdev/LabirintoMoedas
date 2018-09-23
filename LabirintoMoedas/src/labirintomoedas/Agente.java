@@ -54,17 +54,22 @@ public class Agente {
     }
     
     public void anda() throws InterruptedException{
-        for(int i=0;i<100;i++){
+        for(int i=0;i<200;i++){
+            
             detector();
             labirinto.desenhaAmbiente();
+            
             Elemento e = temElemento(getX(), getY());
             if(e != null && e.getTipo() == TipoElemento.Buraco){
                 System.out.println("Game Over");
                 return;
             }
+            
             if(listaSacos.size() == 16){
+                genetico();
                 caminhaAstar(labirinto.getPorta());
             }
+            
             Elemento saco = temSacoNaoVisitado();
             if(saco != null){
                 caminhaAstar(saco);
@@ -72,7 +77,8 @@ public class Agente {
             }else{
                 caminhaAleatorio();
             }
-            Thread.sleep(500);
+            
+            Thread.sleep(250);
         }
     }
     
@@ -162,7 +168,7 @@ public class Agente {
         setY(caminho.y);
         detector();
         labirinto.desenhaAmbiente();
-        Thread.sleep(500);
+        Thread.sleep(250);
         return 0;
     }
     
@@ -285,26 +291,26 @@ public class Agente {
                     if(e.getTipo() == TipoElemento.Buraco){ //Pula buraco
                         switch(getDirecao()){
                             case 0:
-                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco){
+                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco && y+2 < labirinto.n-1){
                                 setY(getY()+1);
                                 return true;
                             }
                             
                             break;
                         case 1:
-                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco){
+                            if(temElemento(x+1, y) == null || temElemento(x+1, y).getTipo() == TipoElemento.Bau || temElemento(x+1, y).getTipo() == TipoElemento.Saco && x+2 < labirinto.n-1){
                                 setX(getX()+1);
                                 return true;
                             }
                             break;
                         case 2:
-                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco){
+                            if(temElemento(x, y-1) == null || temElemento(x, y-1).getTipo() == TipoElemento.Bau || temElemento(x, y-1).getTipo() == TipoElemento.Saco && y-2 < labirinto.n-1){
                                 setY(getY()-1);
                                 return true;
                             }
                             break;
                         case 3:
-                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco){
+                            if(temElemento(x-1, y) == null || temElemento(x-1, y).getTipo() == TipoElemento.Bau || temElemento(x-1, y).getTipo() == TipoElemento.Saco && x-2 < labirinto.n-1){
                                 setX(getX()-1);
                                 return true;
                             }
@@ -459,14 +465,40 @@ public class Agente {
     private int[] atual = new int[17];
     private int[] melhor = new int[17];
     
+    public void desenhaMelhor(){
+        for(int x=0;x<4;x++)
+        for(int i=0;i<16;i++){
+            if(melhor[i] == x){
+                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+            }
+            
+        }
+        System.out.println();
+    }
+    
+    public void desenhaPop(){
+        for(int x=0;x<4;x++)
+        for(int i=0;i<16;i++){
+            if(populacao[i] == x){
+                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+            }
+            
+        }
+        System.out.println();
+    }
+    
     public boolean genetico(){
+        System.out.println("############# GENETICO #######################");
         popular();
-        for(int i=0;i < 100;i++){
+        for(int i=0;i < 1000;i++){
             mutar();
             if(aptdar()){
+                
                 return true;
             }
         }
+        desenhaPop();
+        desenhaMelhor();
         return false;
     }
     
@@ -491,6 +523,7 @@ public class Agente {
         Random rand = new Random();
         int t1 = rand.nextInt(16);
         int t2 = rand.nextInt(16);
+        atual = melhor.clone();
         int a = atual[t1];
         int b = atual[t2];
         atual[t1] = b;
@@ -505,11 +538,14 @@ public class Agente {
             if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
             if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
         }
-        int diferenca = soma0+soma1-soma2-soma3;
+        int diferenca = Math.abs(soma0-soma1)-Math.abs(soma2-soma3);
         atual[16] = diferenca;
         if(diferenca == 0){
             melhor = atual.clone();
             return true;
+        }
+        if(diferenca < melhor[16]){
+            melhor = atual.clone();
         }
         return false;
     }
