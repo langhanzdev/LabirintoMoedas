@@ -16,6 +16,7 @@ public class Elemento {
     private int x;
     private int y;
     private boolean isAdd;
+    private boolean isVisitado;
 
     public Elemento(TipoElemento tipo, int id, int x, int y) {
         this.tipo = tipo;
@@ -23,7 +24,18 @@ public class Elemento {
         this.x = x;
         this.y = y;
         this.isAdd = false;
+        this.isVisitado = false;
     }
+
+    public boolean isIsVisitado() {
+        return isVisitado;
+    }
+
+    public void setIsVisitado(boolean isVisitado) {
+        this.isVisitado = isVisitado;
+    }
+    
+    
 
     public boolean isIsAdd() {
         return isAdd;

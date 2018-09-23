@@ -14,13 +14,14 @@ import java.util.Random;
  */
 public class LabirintoMoedas {
 
-    public static ArrayList<Elemento> listaElementos = new ArrayList<>();
+    public ArrayList<Elemento> listaElementos = new ArrayList<>();
     public Elemento porta;
     private int ladoPorta;
     private Agente agente;
-    public static final int n = 10;
+    public final int n = 10;
     private Random rand = new Random();
     
+    /*
     public static void main(String[] args) throws InterruptedException {
         
         
@@ -47,11 +48,49 @@ public class LabirintoMoedas {
         }
         
     }
+    */
+    
+    
+    public LabirintoMoedas(Agente agente) throws InterruptedException{
+        
+//        LabirintoMoedas lab = new LabirintoMoedas();
+//        lab.agente = new Agente();
+        this.agente = agente;
+        System.out.println("Criado paredes...");
+        geraParedao();
+        desenhaAmbiente();
+        System.out.println("Criando baus...");
+        geraBaus();
+        System.out.println("Criando muros...");
+        geraMuros();
+        System.out.println("Criando buracos...");
+        geraBuracos();
+        
+        System.out.println("Criando sacos...");
+        geraSacos();
+        System.out.println("Liberando agente...");
+//        lab.geraAgente();
+        
+    }
+    
+    public void setPosicaoAgente(int x, int y){
+        agente.setX(x);
+        agente.setY(y);
+    }
+    
+    public int getXAgente(){
+        return agente.getX();
+    }
+    
+    public int getYAgente(){
+        return agente.getY();
+    }
     
     /**
      * Desenha o cenario de jogo
     */
     public void desenhaAmbiente(){
+        
         Elemento e;
         for(int y=0;y<this.n;y++){
             for(int x=0;x<this.n;x++){
@@ -93,7 +132,7 @@ public class LabirintoMoedas {
      * @param y
      * @return Elemento da posicao x,y
      */
-    public static Elemento temElemento(int x, int y){
+    public Elemento temElemento(int x, int y){
         Elemento aux;
         for(int i=0;i<listaElementos.size();i++){
             aux  = listaElementos.get(i);
@@ -202,6 +241,7 @@ public class LabirintoMoedas {
         }while(!isLivre(x, y) || !temSaida(x, y));
         agente.setX(x);
         agente.setY(y);
+        System.out.println("Agente x "+x+" y "+y);
         
     }
     
@@ -260,7 +300,7 @@ public class LabirintoMoedas {
      */
     public void geraSacos(){
         int x,y;
-        for(int i=0;i<7;i++){
+        for(int i=0;i<16;i++){
             do{
             y = rand.nextInt(n);
             x = rand.nextInt(n);
@@ -292,7 +332,7 @@ public class LabirintoMoedas {
      * @param y
      * @return true se está livre
      */
-    public static boolean isLivre(int x, int y){
+    public boolean isLivre(int x, int y){
         Elemento e;
         for(int i=0;i<listaElementos.size();i++){
             e  = listaElementos.get(i);
@@ -377,11 +417,11 @@ public class LabirintoMoedas {
         return false;
     }
     
-    public static int getSize(){
+    public  int getSize(){
         return n;
     }
     
-    public static Elemento getPorta(){
+    public  Elemento getPorta(){
         for(Elemento e:listaElementos){
             if(e.getTipo() == TipoElemento.Porta)
                 return e;
