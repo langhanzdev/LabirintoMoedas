@@ -22,6 +22,7 @@ public class Agente {
     private ArrayList<Elemento> listaElementos;
     private ArrayList<Elemento> listaSacos;
     private LabirintoMoedas labirinto;
+    private int pontos;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -29,12 +30,14 @@ public class Agente {
         this.listaElementos = new ArrayList<>();
         this.listaSacos = new ArrayList<>();
         this.direcao = 0;
+        this.pontos = 0;
     }
 
     public Agente() throws InterruptedException {
         this.listaElementos = new ArrayList<>();
         this.listaSacos = new ArrayList<>();
         this.direcao = 0;
+        this.pontos = 0;
         System.out.println("Iniciando labirinto");
         labirinto = new LabirintoMoedas(this);
         labirinto.geraAgente();
@@ -42,7 +45,7 @@ public class Agente {
         setX(labirinto.getXAgente());
         setY(labirinto.getYAgente());
 //        for(int i=0;i<10 ;i++){
-            labirinto.desenhaAmbiente();
+            desenhaAmbiente();
             anda();
             Thread.sleep(500);
 //        }
@@ -53,11 +56,21 @@ public class Agente {
         
     }
     
+    public void desenhaAmbiente(){
+        labirinto.desenhaAmbiente();
+        int moedas = 0;
+        for(Elemento e:listaSacos){
+            moedas += e.getMoedas();
+        }
+        System.out.println("Moedas: "+moedas);
+        System.out.println("Pontos: "+pontos);
+    }
+    
     public void anda() throws InterruptedException{
         for(int i=0;i<200;i++){
             
             detector();
-            labirinto.desenhaAmbiente();
+            desenhaAmbiente();
             
             Elemento e = temElemento(getX(), getY());
             if(e != null && e.getTipo() == TipoElemento.Buraco){
@@ -67,7 +80,14 @@ public class Agente {
             
             if(listaSacos.size() == 16){
                 genetico();
-                caminhaAstar(labirinto.getPorta());
+                depositaMoedas();
+                
+                for(Elemento p:listaElementos){
+                    if(p.getTipo() == TipoElemento.Porta){
+                        caminhaAstar(p);
+                    }
+                }
+                
             }
             
             Elemento saco = temSacoNaoVisitado();
@@ -79,6 +99,22 @@ public class Agente {
             }
             
             Thread.sleep(250);
+        }
+    }
+    
+    public void depositaMoedas() throws InterruptedException{
+        Elemento el;
+        int contBau = 0;
+
+        for(int j=0;j<listaElementos.size();j++){
+            el = listaElementos.get(j);
+            if(el.getTipo() == TipoElemento.Bau){
+                caminhaAstar(el);
+                listaElementos.get(j).setMoedas(melhor[contBau]+melhor[contBau+1]+melhor[contBau+2]+melhor[contBau+3]);
+                System.out.println("Bau "+contBau+" M: "+listaElementos.get(j).getMoedas());
+                contBau +=4;
+            }
+
         }
     }
     
@@ -105,6 +141,7 @@ public class Agente {
     }
     
     public void caminhaAleatorio(){
+        detector();
         switch(getDirecao()){
             case 0:
                 if(isLivre(getX(), getY()+1)){
@@ -167,7 +204,7 @@ public class Agente {
         setX(caminho.x);
         setY(caminho.y);
         detector();
-        labirinto.desenhaAmbiente();
+        desenhaAmbiente();
         Thread.sleep(250);
         return 0;
     }
@@ -176,9 +213,9 @@ public class Agente {
         Elemento e;
         e = temElemento(getX(),getY());
         if(e != null && e.getTipo() == TipoElemento.Saco){
-            recolhoMoedas();
             labirinto.listaElementos.remove(e);
             listaElementos.remove(e);
+            pontos += e.getMoedas()*10;
             listaSacos.add(e);
         }
         
@@ -199,11 +236,18 @@ public class Agente {
         e = temElemento(getX()-2, getY());
         addLista(e);
         
-    }
-    
-    public void recolhoMoedas(){
+        e = temElemento(getX()-1, getY()+1);
+        addLista(e);
+        e = temElemento(getX()+1, getY()+1);
+        addLista(e);
+        e = temElemento(getX()+1, getY()-1);
+        addLista(e);
+        e = temElemento(getX()-1, getY()-1);
+        addLista(e);
         
     }
+    
+   
     
     public int qtdSacosRecolhidos(){
         int soma = 0;
@@ -293,6 +337,7 @@ public class Agente {
                             case 0:
                             if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco && y+2 < labirinto.n-1){
                                 setY(getY()+1);
+                                pontos += 30;
                                 return true;
                             }
                             
@@ -300,18 +345,21 @@ public class Agente {
                         case 1:
                             if(temElemento(x+1, y) == null || temElemento(x+1, y).getTipo() == TipoElemento.Bau || temElemento(x+1, y).getTipo() == TipoElemento.Saco && x+2 < labirinto.n-1){
                                 setX(getX()+1);
+                                pontos += 30;
                                 return true;
                             }
                             break;
                         case 2:
-                            if(temElemento(x, y-1) == null || temElemento(x, y-1).getTipo() == TipoElemento.Bau || temElemento(x, y-1).getTipo() == TipoElemento.Saco && y-2 < labirinto.n-1){
+                            if(temElemento(x, y-1) == null || temElemento(x, y-1).getTipo() == TipoElemento.Bau || temElemento(x, y-1).getTipo() == TipoElemento.Saco && y-2 >= 0){
                                 setY(getY()-1);
+                                pontos += 30;
                                 return true;
                             }
                             break;
                         case 3:
-                            if(temElemento(x-1, y) == null || temElemento(x-1, y).getTipo() == TipoElemento.Bau || temElemento(x-1, y).getTipo() == TipoElemento.Saco && x-2 < labirinto.n-1){
+                            if(temElemento(x-1, y) == null || temElemento(x-1, y).getTipo() == TipoElemento.Bau || temElemento(x-1, y).getTipo() == TipoElemento.Saco && x-2 >= 0){
                                 setX(getX()-1);
+                                pontos += 30;
                                 return true;
                             }
                             break;
@@ -490,7 +538,7 @@ public class Agente {
     public boolean genetico(){
         System.out.println("############# GENETICO #######################");
         popular();
-        for(int i=0;i < 1000;i++){
+        for(int i=0;i < 5000;i++){
             mutar();
             if(aptdar()){
                 
@@ -538,7 +586,7 @@ public class Agente {
             if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
             if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
         }
-        int diferenca = Math.abs(soma0-soma1)-Math.abs(soma2-soma3);
+        int diferenca = Math.abs(soma0+soma1)-Math.abs(soma2+soma3);
         atual[16] = diferenca;
         if(diferenca == 0){
             melhor = atual.clone();

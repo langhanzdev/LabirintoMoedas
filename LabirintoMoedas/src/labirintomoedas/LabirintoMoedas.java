@@ -306,7 +306,7 @@ public class LabirintoMoedas {
             x = rand.nextInt(n);
             }while(!isLivre(x, y));
             Elemento e = new Elemento(TipoElemento.Saco, i, x, y);
-            e.setMoedas(rand.nextInt(51));
+            e.setMoedas(rand.nextInt(50)+1);
             listaElementos.add(e);
         }
     }
