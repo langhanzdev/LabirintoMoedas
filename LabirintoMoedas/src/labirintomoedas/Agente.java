@@ -57,6 +57,11 @@ public class Agente {
         for(int i=0;i<100;i++){
             detector();
             labirinto.desenhaAmbiente();
+            Elemento e = temElemento(getX(), getY());
+            if(e != null && e.getTipo() == TipoElemento.Buraco){
+                System.out.println("Game Over");
+                return;
+            }
             if(listaSacos.size() == 16){
                 caminhaAstar(labirinto.getPorta());
             }
@@ -449,7 +454,65 @@ public class Agente {
         return (1 *(dx + dy) + (Math.sqrt(2) - 2 * 1) * Math.min(dx, dy));
     }
 
+    // genetico ----------------------
+    private int[] populacao = new int[17];
+    private int[] atual = new int[17];
+    private int[] melhor = new int[17];
     
+    public boolean genetico(){
+        popular();
+        for(int i=0;i < 100;i++){
+            mutar();
+            if(aptdar()){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void popular(){
+        int cont0=0,cont1=0, cont2=0,cont3=0;
+        Random rand = new Random();
+        int r;
+        for(int i=0;i<16;i++){
+                     
+            do{
+                r = rand.nextInt(4);
+            }while((r == 0 && cont0 >= 4) || (r == 1 && cont1 >= 4) || (r == 2 && cont2 >= 4) || (r == 3 && cont3 >= 4));
+            populacao[i] = r;
+            if(r == 0 && cont0 < 4) cont0++;
+            if(r == 1 && cont1 < 4) cont1++;
+            if(r == 2 && cont2 < 4) cont2++;
+            if(r == 3 && cont3 < 4) cont3++;           
+        }
+        atual = populacao.clone();
+    }
+    public void mutar(){
+        Random rand = new Random();
+        int t1 = rand.nextInt(16);
+        int t2 = rand.nextInt(16);
+        int a = atual[t1];
+        int b = atual[t2];
+        atual[t1] = b;
+        atual[t2] = a;
+    }
+    
+    public boolean aptdar(){
+        int soma0=0,soma1=0,soma2=0,soma3=0;
+        for(int i=0;i<16;i++){
+            if(atual[i] == 0) soma0 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 1) soma1 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
+        }
+        int diferenca = soma0+soma1-soma2-soma3;
+        atual[16] = diferenca;
+        if(diferenca == 0){
+            melhor = atual.clone();
+            return true;
+        }
+        return false;
+    }
     
     //--------------------------------------------------------
 
