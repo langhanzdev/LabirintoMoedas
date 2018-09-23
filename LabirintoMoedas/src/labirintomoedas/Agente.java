@@ -54,65 +54,31 @@ public class Agente {
     }
     
     public void anda() throws InterruptedException{
-        for(int i=0;i<50;i++){
+        for(int i=0;i<100;i++){
             detector();
             labirinto.desenhaAmbiente();
+            if(listaSacos.size() == 16){
+                caminhaAstar(labirinto.getPorta());
+            }
             Elemento saco = temSacoNaoVisitado();
             if(saco != null){
                 caminhaAstar(saco);
                 
             }else{
-                switch(getDirecao()){
-                        case 0:
-                            if(isLivre(getX(), getY()+1)){
-
-
-                                setY(getY()+1);
-                            }else{
-                                setDirecao(novaDirecao());
-                            }
-                            break;
-                        case 1:
-                            if(isLivre(getX()+1, getY())){
-
-
-                                setX(getX()+1);
-                            }else{
-                                setDirecao(novaDirecao());
-                            }
-                            break;
-                        case 2:
-                            if(isLivre(getX(), getY()-1)){
-
-
-                                setY(getY()-1);
-                            }else{
-                                setDirecao(novaDirecao());
-                            }
-                            break;
-                        case 3:
-                            if(isLivre(getX()-1, getY())){
-
-
-                                setX(getX()-1);
-                            }else{
-                                setDirecao(novaDirecao());
-                            }
-                            break;
-                    }
+                caminhaAleatorio();
             }
             Thread.sleep(500);
         }
     }
     
     public void caminhaAstar(Elemento destino) throws InterruptedException{
-        System.out.println("Tamanho lista: "+this.listaElementos.size());
+//        System.out.println("Tamanho lista: "+this.listaElementos.size());
                 Nodo caminho, melhorCaminho;
                 double valorCaminho = Double.MAX_VALUE;
                 Ponto p = new Ponto(destino.getX(),destino.getY());
-                System.out.println("inicio caminho");
+               // System.out.println("inicio caminho");
                 caminho = this.aStar(new Ponto(this.x, this.y), p);
-                System.out.println("valor caminho: " + caminho.parent.finalCost);
+               // System.out.println("valor caminho: " + caminho.parent.finalCost);
                 if (caminho.parent.finalCost < valorCaminho) {
                     valorCaminho = caminho.parent.finalCost;
                     melhorCaminho = caminho;
@@ -127,15 +93,72 @@ public class Agente {
                 //System.out.println("final caminho");
     }
     
-    public void andaCaminho(Nodo caminho) throws InterruptedException{
-        if(caminho == null) return;
-        andaCaminho(caminho.parent);
+    public void caminhaAleatorio(){
+        switch(getDirecao()){
+            case 0:
+                if(isLivre(getX(), getY()+1)){
+
+
+                    setY(getY()+1);
+                }else{
+                    setDirecao(novaDirecao());
+                }
+                break;
+            case 1:
+                if(isLivre(getX()+1, getY())){
+
+
+                    setX(getX()+1);
+                }else{
+                    setDirecao(novaDirecao());
+                }
+                break;
+            case 2:
+                if(isLivre(getX(), getY()-1)){
+
+
+                    setY(getY()-1);
+                }else{
+                    setDirecao(novaDirecao());
+                }
+                break;
+            case 3:
+                if(isLivre(getX()-1, getY())){
+
+
+                    setX(getX()-1);
+                }else{
+                    setDirecao(novaDirecao());
+                }
+                break;
+        }
+    }
+    
+    public int andaCaminho(Nodo caminho) throws InterruptedException{
+        if(caminho == null) return 0;
+        int retorno = andaCaminho(caminho.parent);
+        Elemento e = temElemento(caminho.x,caminho.y);
+        if(retorno == 1 && e != null && e.getTipo() == TipoElemento.Buraco){
+            return -1;
+        }
+        if(retorno == 1 && e != null && e.getTipo() != TipoElemento.Buraco){
+            setX(caminho.x);
+            setY(caminho.y);
+            detector();
+            return 0;
+        }
+        if(retorno == 0 && e != null && e.getTipo() == TipoElemento.Buraco){
+            setX(caminho.x);
+            setY(caminho.y);
+            detector();
+            return 1;
+        }
         setX(caminho.x);
         setY(caminho.y);
         detector();
         labirinto.desenhaAmbiente();
         Thread.sleep(500);
-        
+        return 0;
     }
     
     public void detector(){
@@ -147,6 +170,7 @@ public class Agente {
             listaElementos.remove(e);
             listaSacos.add(e);
         }
+        
         e = temElemento(getX(), getY()+1);
         addLista(e);
         e = temElemento(getX(), getY()+2);
@@ -219,7 +243,23 @@ public class Agente {
      */
     public int novaDirecao(){
         Random ran = new Random();
-        return ran.nextInt(4);
+        int d;
+        int dif;
+        if(getDirecao() == 0);
+            dif = 2;
+        if(getDirecao() == 1){
+            dif = 3;
+        }
+        if(getDirecao() == 2){
+            dif = 0;
+        }
+        if(getDirecao() == 3){
+            dif = 1;
+        }
+        do{
+            d = ran.nextInt(4);
+        }while(d == dif);
+        return d;
     }
     
     /**
@@ -295,6 +335,7 @@ public class Agente {
                 return 1;
             return 0;
         }
+        
         @Override
         public String toString(){
             return "["+this.x+", "+this.y+"]";
@@ -324,46 +365,46 @@ public class Agente {
             ArrayList<Nodo> sucessor = new ArrayList<>();
             Elemento elemento;
             if(atual.x != 0){
-                if(atual.y > 0){
-                    elemento = labirinto.temElemento(atual.x-1, atual.y-1);
-                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
-                        sucessor.add(new Nodo(atual.x-1, atual.y-1));
-                }
+//                if(atual.y > 0){
+//                    elemento = labirinto.temElemento(atual.x-1, atual.y-1);
+//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
+//                        sucessor.add(new Nodo(atual.x-1, atual.y-1));
+//                }
                 elemento = labirinto.temElemento(atual.x - 1, atual.y);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
                     sucessor.add(new Nodo(atual.x-1, atual.y));
-                if(atual.y < labirinto.getSize() -1){
-                    elemento = labirinto.temElemento(atual.x - 1, atual.y+1);
-                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
-                        sucessor.add(new Nodo(atual.x-1, atual.y+1));
-                }
+//                if(atual.y < labirinto.getSize() -1){
+//                    elemento = labirinto.temElemento(atual.x - 1, atual.y+1);
+//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
+//                        sucessor.add(new Nodo(atual.x-1, atual.y+1));
+//                }
             }
             if(atual.x < labirinto.getSize() -1){
-               if(atual.y > 0){   
-                   elemento = labirinto.temElemento(atual.x + 1, atual.y - 1);
-                   if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
-                        sucessor.add(new Nodo(atual.x+1, atual.y-1));
-                }
+//               if(atual.y > 0){   
+//                   elemento = labirinto.temElemento(atual.x + 1, atual.y - 1);
+//                   if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
+//                        sucessor.add(new Nodo(atual.x+1, atual.y-1));
+//                }
                 elemento = labirinto.temElemento(atual.x + 1, atual.y);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
                     sucessor.add(new Nodo(atual.x+1, atual.y));
-                if(atual.y < labirinto.getSize() -1){
-                    elemento = labirinto.temElemento(atual.x + 1, atual.y + 1);
-                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
-                        sucessor.add(new Nodo(atual.x+1, atual.y+1));
-                } 
+//                if(atual.y < labirinto.getSize() -1){
+//                    elemento = labirinto.temElemento(atual.x + 1, atual.y + 1);
+//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
+//                        sucessor.add(new Nodo(atual.x+1, atual.y+1));
+//                } 
             }
             
             if(atual.y != 0){
                 elemento = labirinto.temElemento(atual.x, atual.y - 1);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
                     sucessor.add(new Nodo(atual.x, atual.y-1));
                 
             }
             
             if(atual.y < labirinto.getSize() -1){
                 elemento = labirinto.temElemento(atual.x, atual.y+1);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Buraco && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
+                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
                     sucessor.add(new Nodo(atual.x, atual.y+1));
             }
             for(Nodo vizinho: sucessor){
