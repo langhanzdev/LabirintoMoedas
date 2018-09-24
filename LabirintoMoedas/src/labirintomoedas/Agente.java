@@ -23,6 +23,8 @@ public class Agente {
     private ArrayList<Elemento> listaSacos;
     private LabirintoMoedas labirinto;
     private int pontos;
+    
+    private final int sleep = 250;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -44,11 +46,11 @@ public class Agente {
         
         setX(labirinto.getXAgente());
         setY(labirinto.getYAgente());
-//        for(int i=0;i<10 ;i++){
-            desenhaAmbiente();
-            anda();
-            Thread.sleep(500);
-//        }
+
+        desenhaAmbiente();
+        anda();
+        Thread.sleep(500);
+
     }
     
     public static void main(String[] args) throws InterruptedException {
@@ -56,25 +58,22 @@ public class Agente {
         
     }
     
-    public void desenhaAmbiente(){
-        labirinto.desenhaAmbiente();
-        int moedas = 0;
-        for(Elemento e:listaSacos){
-            moedas += e.getMoedas();
-        }
-        System.out.println("Moedas: "+moedas);
-        System.out.println("Pontos: "+pontos);
-    }
+    // Metodos principais ------------------------------------------------------
     
+    /**
+     * Funcão que realiza os movimentos do agente no labirinto
+     * @throws InterruptedException 
+     */
     public void anda() throws InterruptedException{
         for(int i=0;i<200;i++){
             
             detector();
             desenhaAmbiente();
             
+            
             Elemento e = temElemento(getX(), getY());
             if(e != null && e.getTipo() == TipoElemento.Buraco){
-                System.out.println("Game Over");
+                mostraMensagemFinal(2);
                 return;
             }
             
@@ -90,6 +89,11 @@ public class Agente {
                 
             }
             
+            if(abriuPorta()){
+                mostraMensagemFinal(1);
+                return;
+            }
+            
             Elemento saco = temSacoNaoVisitado();
             if(saco != null){
                 caminhaAstar(saco);
@@ -98,48 +102,71 @@ public class Agente {
                 caminhaAleatorio();
             }
             
-            Thread.sleep(250);
+            Thread.sleep(sleep);
         }
     }
     
+    /**
+     * Deposita moedas nos baus
+     * @throws InterruptedException 
+     */
     public void depositaMoedas() throws InterruptedException{
         Elemento el;
         int contBau = 0;
-
+        
         for(int j=0;j<listaElementos.size();j++){
             el = listaElementos.get(j);
+            int soma = 0;
             if(el.getTipo() == TipoElemento.Bau){
                 caminhaAstar(el);
-                listaElementos.get(j).setMoedas(melhor[contBau]+melhor[contBau+1]+melhor[contBau+2]+melhor[contBau+3]);
-                System.out.println("Bau "+contBau+" M: "+listaElementos.get(j).getMoedas());
+                
+                for(int x=0;x<4;x++){
+                    for(int i=0;i<16;i++){
+                        if(melhor[i] == x){
+                            soma += listaSacos.get(j).getMoedas();
+                        }
+
+                    }
+                    listaElementos.get(j).setMoedas(soma);
+                    soma = 0;
+                }
+                
+                
+                //listaElementos.get(j).setMoedas(melhor[contBau]+melhor[contBau+1]+melhor[contBau+2]+melhor[contBau+3]);
+                //System.out.println("Bau "+contBau+" M: "+listaElementos.get(j).getMoedas());
                 contBau +=4;
             }
 
         }
     }
     
+    /**
+     * Faz o caminho encontrado pelo A*
+     * @param destino
+     * @throws InterruptedException 
+     */
     public void caminhaAstar(Elemento destino) throws InterruptedException{
-//        System.out.println("Tamanho lista: "+this.listaElementos.size());
+
                 Nodo caminho, melhorCaminho;
                 double valorCaminho = Double.MAX_VALUE;
                 Ponto p = new Ponto(destino.getX(),destino.getY());
-               // System.out.println("inicio caminho");
                 caminho = this.aStar(new Ponto(this.x, this.y), p);
-               // System.out.println("valor caminho: " + caminho.parent.finalCost);
+
                 if (caminho.parent.finalCost < valorCaminho) {
                     valorCaminho = caminho.parent.finalCost;
                     melhorCaminho = caminho;
                 }
                 andaCaminho(caminho);
                 while (caminho.parent != null) {
-                    //System.out.println(caminho.toString());
                     caminho = caminho.parent;
-
                 }
 
-                //System.out.println("final caminho");
+
     }
     
+    /**
+     * Faz um caminho aleatorio, quando não há nada detectado
+     */
     public void caminhaAleatorio(){
         detector();
         switch(getDirecao()){
@@ -182,6 +209,12 @@ public class Agente {
         }
     }
     
+    /**
+     * Anda o caminho determinado pelo A*, recursivamente
+     * @param caminho
+     * @return
+     * @throws InterruptedException 
+     */
     public int andaCaminho(Nodo caminho) throws InterruptedException{
         if(caminho == null) return 0;
         int retorno = andaCaminho(caminho.parent);
@@ -205,10 +238,13 @@ public class Agente {
         setY(caminho.y);
         detector();
         desenhaAmbiente();
-        Thread.sleep(250);
+        Thread.sleep(sleep);
         return 0;
     }
     
+    /**
+     * Detecta elementos ao redor
+     */
     public void detector(){
         Elemento e;
         e = temElemento(getX(),getY());
@@ -218,7 +254,7 @@ public class Agente {
             pontos += e.getMoedas()*10;
             listaSacos.add(e);
         }
-        
+               
         e = temElemento(getX(), getY()+1);
         addLista(e);
         e = temElemento(getX(), getY()+2);
@@ -246,77 +282,7 @@ public class Agente {
         addLista(e);
         
     }
-    
-   
-    
-    public int qtdSacosRecolhidos(){
-        int soma = 0;
-        for(Elemento e:listaElementos){
-            if(e.getTipo() == TipoElemento.Saco){
-                soma++;
-            }
-        }
-        return soma;
-    }
-    
-    public Elemento temSacoNaoVisitado(){
-        for(Elemento e:listaElementos){
-            if(!e.isIsVisitado() && e.getTipo() == TipoElemento.Saco)
-                return e;
-        }
-        return null;
-    }
-    
-    public void addLista(Elemento e){
-        if(e != null && e.getTipo() != TipoElemento.Parede && !e.isIsAdd()){
-            e.setIsAdd(true);
-            listaElementos.add(e);
-        }
-    }
-    
-    
-    /**
-     * Retorna o elemento que está na posicao passada por parametro
-     * @param x
-     * @param y
-     * @return Elemento da posicao x,y
-     */
-    public Elemento temElemento(int x, int y){
-        Elemento aux;
-        for(int i=0;i<labirinto.listaElementos.size();i++){
-            aux  = labirinto.listaElementos.get(i);
-            if(aux.getX() == x && aux.getY() == y){
-                return aux;
-            }
-        }
-        return null;
-    }
-    
-    /**
-     * Sorteia uma nova direção aleatoria para o agente
-     * @return 
-     */
-    public int novaDirecao(){
-        Random ran = new Random();
-        int d;
-        int dif;
-        if(getDirecao() == 0);
-            dif = 2;
-        if(getDirecao() == 1){
-            dif = 3;
-        }
-        if(getDirecao() == 2){
-            dif = 0;
-        }
-        if(getDirecao() == 3){
-            dif = 1;
-        }
-        do{
-            d = ran.nextInt(4);
-        }while(d == dif);
-        return d;
-    }
-    
+  
     /**
      * Retorna se a posicao passada está livre para o agente
      * seguindo as regras do agente. Ele pode andar sobre baus e sacos de moedas
@@ -375,6 +341,9 @@ public class Agente {
         return true;
     }
     
+    /**
+     * Classe interna Nodo, para realizar operaçoes no A*
+     */
      private class Nodo implements Comparable<Nodo>{ 
         double stepsCost = 0;
         double heuristicCost = 0; //Heuristic cost
@@ -401,83 +370,73 @@ public class Agente {
         }
 }
 
-    
-    public Nodo aStar(Ponto inicio, Ponto destino){
+    /**
+     * Algoritmo A*
+     * @param inicio
+     * @param destino
+     * @return 
+     */
+    public Nodo aStar(Ponto inicio, Ponto destino) {
         Nodo atual = null;
         Nodo comp = null;
-        ArrayList<Nodo> aberto =  new ArrayList<>();
+        ArrayList<Nodo> aberto = new ArrayList<>();
         ArrayList<Nodo> fechado = new ArrayList<>();
         Nodo nodo = new Nodo(inicio.x, inicio.y);
         nodo.finalCost = 0;
         nodo.heuristicCost = 0;
         aberto.add(nodo);
-        while(!aberto.isEmpty()){
+        while (!aberto.isEmpty()) {
             double max_final_cost = Double.MAX_VALUE;
-            for(Nodo n:aberto){
-                if(n.finalCost < max_final_cost){
+            for (Nodo n : aberto) {
+                if (n.finalCost < max_final_cost) {
                     atual = n;
                     max_final_cost = n.finalCost;
                 }
             }
-            aberto.remove(atual);                                       
+            aberto.remove(atual);
             fechado.add(atual);
             ArrayList<Nodo> sucessor = new ArrayList<>();
             Elemento elemento;
-            if(atual.x != 0){
-//                if(atual.y > 0){
-//                    elemento = labirinto.temElemento(atual.x-1, atual.y-1);
-//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y-1)))
-//                        sucessor.add(new Nodo(atual.x-1, atual.y-1));
-//                }
+            if (atual.x != 0) {
                 elemento = labirinto.temElemento(atual.x - 1, atual.y);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y)))
-                    sucessor.add(new Nodo(atual.x-1, atual.y));
-//                if(atual.y < labirinto.getSize() -1){
-//                    elemento = labirinto.temElemento(atual.x - 1, atual.y+1);
-//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x-1, atual.y+1)))
-//                        sucessor.add(new Nodo(atual.x-1, atual.y+1));
-//                }
+                if (elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x - 1, atual.y))) {
+                    sucessor.add(new Nodo(atual.x - 1, atual.y));
+                }
+
             }
-            if(atual.x < labirinto.getSize() -1){
-//               if(atual.y > 0){   
-//                   elemento = labirinto.temElemento(atual.x + 1, atual.y - 1);
-//                   if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y-1))) 
-//                        sucessor.add(new Nodo(atual.x+1, atual.y-1));
-//                }
+            if (atual.x < labirinto.getSize() - 1) {
                 elemento = labirinto.temElemento(atual.x + 1, atual.y);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x+1, atual.y)))
-                    sucessor.add(new Nodo(atual.x+1, atual.y));
-//                if(atual.y < labirinto.getSize() -1){
-//                    elemento = labirinto.temElemento(atual.x + 1, atual.y + 1);
-//                    if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta)||destino.equals(new Ponto(atual.x+1, atual.y+1)))
-//                        sucessor.add(new Nodo(atual.x+1, atual.y+1));
-//                } 
+                if (elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x + 1, atual.y))) {
+                    sucessor.add(new Nodo(atual.x + 1, atual.y));
+                }
             }
-            
-            if(atual.y != 0){
+
+            if (atual.y != 0) {
                 elemento = labirinto.temElemento(atual.x, atual.y - 1);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y-1)))
-                    sucessor.add(new Nodo(atual.x, atual.y-1));
-                
+                if (elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y - 1))) {
+                    sucessor.add(new Nodo(atual.x, atual.y - 1));
+                }
+
             }
-            
-            if(atual.y < labirinto.getSize() -1){
-                elemento = labirinto.temElemento(atual.x, atual.y+1);
-                if(elemento == null || (elemento.getTipo() != TipoElemento.Parede  && elemento.getTipo() != TipoElemento.Porta)|| destino.equals(new Ponto(atual.x, atual.y+1)))
-                    sucessor.add(new Nodo(atual.x, atual.y+1));
+
+            if (atual.y < labirinto.getSize() - 1) {
+                elemento = labirinto.temElemento(atual.x, atual.y + 1);
+                if (elemento == null || (elemento.getTipo() != TipoElemento.Parede && elemento.getTipo() != TipoElemento.Porta) || destino.equals(new Ponto(atual.x, atual.y + 1))) {
+                    sucessor.add(new Nodo(atual.x, atual.y + 1));
+                }
             }
-            for(Nodo vizinho: sucessor){
+            for (Nodo vizinho : sucessor) {
                 vizinho.parent = atual;
                 boolean flag = false;
-                if(destino.equals(new Ponto(vizinho.x, vizinho.y))){
+                if (destino.equals(new Ponto(vizinho.x, vizinho.y))) {
                     return vizinho;
                 }
                 vizinho.stepsCost = atual.stepsCost + 1;
-                vizinho.heuristicCost = this.diagonalDistace(new Ponto(vizinho.x,vizinho.y), destino);
+                vizinho.heuristicCost = this.diagonalDistace(new Ponto(vizinho.x, vizinho.y), destino);
                 vizinho.finalCost = vizinho.stepsCost + vizinho.heuristicCost;
-                for(Nodo n : aberto){
-                    if(n.x == vizinho.x && n.y == vizinho.y){
-                        if(n.finalCost > vizinho.finalCost){
+                for (Nodo n : aberto) {
+                    if (n.x == vizinho.x && n.y == vizinho.y) {
+                        if (n.finalCost > vizinho.finalCost) {
                             n.parent = vizinho.parent;
                             n.finalCost = vizinho.finalCost;
                             flag = true;
@@ -485,56 +444,31 @@ public class Agente {
                         }
                     }
                 }
-                for(Nodo n : fechado){
-                    if(n.x == vizinho.x && n.y == vizinho.y){
-                        if(n.finalCost > vizinho.finalCost){
+                for (Nodo n : fechado) {
+                    if (n.x == vizinho.x && n.y == vizinho.y) {
+                        if (n.finalCost > vizinho.finalCost) {
                             aberto.add(vizinho);
                             flag = true;
                         }
                     }
                 }
-                if(flag == false){
+                if (flag == false) {
                     aberto.add(vizinho);
-}
-                
-            } 
+                }
+
+            }
         }
         return null;
-}
-    
-    public double diagonalDistace(Ponto start, Ponto end){
-        double dx = Math.abs(start.x - end.x);
-        double dy = Math.abs(start.y - end.y);
-        return (1 *(dx + dy) + (Math.sqrt(2) - 2 * 1) * Math.min(dx, dy));
     }
 
-    // genetico ----------------------
+    
+
+    // genetico ---------------------------------------------------------------
+    
     private int[] populacao = new int[17];
     private int[] atual = new int[17];
     private int[] melhor = new int[17];
-    
-    public void desenhaMelhor(){
-        for(int x=0;x<4;x++)
-        for(int i=0;i<16;i++){
-            if(melhor[i] == x){
-                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
-            }
-            
-        }
-        System.out.println();
-    }
-    
-    public void desenhaPop(){
-        for(int x=0;x<4;x++)
-        for(int i=0;i<16;i++){
-            if(populacao[i] == x){
-                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
-            }
-            
-        }
-        System.out.println();
-    }
-    
+
     public boolean genetico(){
         System.out.println("############# GENETICO #######################");
         popular();
@@ -567,6 +501,7 @@ public class Agente {
         }
         atual = populacao.clone();
     }
+    
     public void mutar(){
         Random rand = new Random();
         int t1 = rand.nextInt(16);
@@ -598,7 +533,156 @@ public class Agente {
         return false;
     }
     
-    //--------------------------------------------------------
+    // ---- Auxiliares ----------------------------------------------------------
+    
+    public void desenhaAmbiente(){
+        labirinto.desenhaAmbiente();
+        mostraPontuacao();
+    }
+    
+    public void mostraPontuacao(){
+        int moedas = 0;
+        for(Elemento e:listaSacos){
+            moedas += e.getMoedas();
+        }
+        System.out.println("Moedas: "+moedas);
+        System.out.println("Pontos: "+pontos);
+    }
+    
+    public boolean abriuPorta(){
+        for(Elemento e:listaElementos){
+            if(e.getTipo() == TipoElemento.Porta){
+                if(getX() == e.getX() && getY() == e.getY()){
+                    pontos += 330;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void mostraMensagemFinal(int tipo){
+        System.out.println("--------------------------------------------------------");
+        if(tipo == 1){
+            System.out.println("SUCESSO: Agente conseguiu sair do labirinto!");
+            mostraPontuacao();
+//            for(Elemento e:listaElementos){
+//                if(e.getTipo() == TipoElemento.Bau){
+//                    System.out.println("Bau: "+e.getMoedas());
+//                }
+//            }
+        }
+        if(tipo == 2){
+            System.out.println("GAME OVER");
+            System.out.println("INSUCESSO: Agente caiu em um buraco.");
+            mostraPontuacao();
+//            for(Elemento e:listaElementos){
+//                if(e.getTipo() == TipoElemento.Bau){
+//                    System.out.println("Bau: "+e.getMoedas());
+//                }
+//            }
+        }
+        
+        System.out.println("--------------------------------------------------------");
+        
+    }
+    
+    public void desenhaMelhor(){
+        for(int x=0;x<4;x++)
+        for(int i=0;i<16;i++){
+            if(melhor[i] == x){
+                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+            }
+            
+        }
+        System.out.println();
+    }
+    
+    public void desenhaPop(){
+        for(int x=0;x<4;x++)
+        for(int i=0;i<16;i++){
+            if(populacao[i] == x){
+                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+            }
+            
+        }
+        System.out.println();
+    }
+    
+    public double diagonalDistace(Ponto start, Ponto end){
+        double dx = Math.abs(start.x - end.x);
+        double dy = Math.abs(start.y - end.y);
+        return (1 *(dx + dy) + (Math.sqrt(2) - 2 * 1) * Math.min(dx, dy));
+    }
+    
+    public int qtdSacosRecolhidos(){
+        int soma = 0;
+        for(Elemento e:listaElementos){
+            if(e.getTipo() == TipoElemento.Saco){
+                soma++;
+            }
+        }
+        return soma;
+    }
+    
+    public Elemento temSacoNaoVisitado(){
+        for(Elemento e:listaElementos){
+            if(!e.isIsVisitado() && e.getTipo() == TipoElemento.Saco)
+                return e;
+        }
+        return null;
+    }
+    
+    public void addLista(Elemento e){
+        if(e != null && e.getTipo() != TipoElemento.Parede && !e.isIsAdd()){
+            e.setIsAdd(true);
+            listaElementos.add(e);
+        }
+    }
+      
+    /**
+     * Retorna o elemento que está na posicao passada por parametro
+     * @param x
+     * @param y
+     * @return Elemento da posicao x,y
+     */
+    public Elemento temElemento(int x, int y){
+        Elemento aux;
+        for(int i=0;i<labirinto.listaElementos.size();i++){
+            aux  = labirinto.listaElementos.get(i);
+            if(aux.getX() == x && aux.getY() == y){
+                return aux;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Sorteia uma nova direção aleatoria para o agente
+     * @return 
+     */
+    public int novaDirecao(){
+        Random ran = new Random();
+        int d;
+        int dif;
+        if(getDirecao() == 0);
+            dif = 2;
+        if(getDirecao() == 1){
+            dif = 3;
+        }
+        if(getDirecao() == 2){
+            dif = 0;
+        }
+        if(getDirecao() == 3){
+            dif = 1;
+        }
+        do{
+            d = ran.nextInt(4);
+        }while(d == dif);
+        return d;
+    }
+    
+    // GETs e SETs -------------------------------------------------------------
 
     public int getDirecao() {
         return direcao;

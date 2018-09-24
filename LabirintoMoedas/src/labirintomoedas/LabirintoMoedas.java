@@ -21,40 +21,10 @@ public class LabirintoMoedas {
     public final int n = 10;
     private Random rand = new Random();
     
-    /*
-    public static void main(String[] args) throws InterruptedException {
-        
-        
-        LabirintoMoedas lab = new LabirintoMoedas();
-        lab.agente = new Agente();
-        System.out.println("Criado paredes...");
-        lab.geraParedao();
-        lab.desenhaAmbiente();
-        System.out.println("Criando baus...");
-        lab.geraBaus();
-        System.out.println("Criando muros...");
-        lab.geraMuros();
-        System.out.println("Criando buracos...");
-        lab.geraBuracos();
-        
-        System.out.println("Criando sacos...");
-        lab.geraSacos();
-        System.out.println("Liberando agente...");
-        lab.geraAgente();
-        for(int i=0;i<2;i++){
-            lab.agente.anda();
-            lab.desenhaAmbiente();
-            Thread.sleep(500);
-        }
-        
-    }
-    */
-    
     
     public LabirintoMoedas(Agente agente) throws InterruptedException{
         
-//        LabirintoMoedas lab = new LabirintoMoedas();
-//        lab.agente = new Agente();
+
         this.agente = agente;
         System.out.println("Criado paredes...");
         geraParedao();
@@ -69,7 +39,7 @@ public class LabirintoMoedas {
         System.out.println("Criando sacos...");
         geraSacos();
         System.out.println("Liberando agente...");
-//        lab.geraAgente();
+
         
     }
     
