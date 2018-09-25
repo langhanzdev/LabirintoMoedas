@@ -24,7 +24,7 @@ public class Agente {
     private LabirintoMoedas labirinto;
     private int pontos;
     
-    private final int sleep = 250;
+    private final int sleep = 100;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -65,8 +65,8 @@ public class Agente {
      * @throws InterruptedException 
      */
     public void anda() throws InterruptedException{
-        for(int i=0;i<200;i++){
-            
+
+        while(true){
             detector();
             desenhaAmbiente();
             
@@ -132,8 +132,6 @@ public class Agente {
                 }
                 
                 
-                //listaElementos.get(j).setMoedas(melhor[contBau]+melhor[contBau+1]+melhor[contBau+2]+melhor[contBau+3]);
-                //System.out.println("Bau "+contBau+" M: "+listaElementos.get(j).getMoedas());
                 contBau +=4;
             }
 
@@ -253,6 +251,13 @@ public class Agente {
             listaElementos.remove(e);
             pontos += e.getMoedas()*10;
             listaSacos.add(e);
+        }
+        
+        if(e == null){
+            Random rand = new Random();
+            if(rand.nextInt(10) == 0){
+                setDirecao(novaDirecao());
+            }
         }
                
         e = temElemento(getX(), getY()+1);
@@ -468,22 +473,26 @@ public class Agente {
     private int[] populacao = new int[17];
     private int[] atual = new int[17];
     private int[] melhor = new int[17];
+    
 
     public boolean genetico(){
-        System.out.println("############# GENETICO #######################");
+//        System.out.println("############# GENETICO #######################");
+        melhor[16] = 1000;
         popular();
-        for(int i=0;i < 5000;i++){
+        for(int i=0;i < 1000;i++){
             mutar();
             if(aptdar()){
                 
                 return true;
             }
         }
-        desenhaPop();
-        desenhaMelhor();
+
         return false;
     }
     
+    /**
+     * Primeira populacao com baus de 0 a 3
+     */
     public void popular(){
         int cont0=0,cont1=0, cont2=0,cont3=0;
         Random rand = new Random();
@@ -500,8 +509,14 @@ public class Agente {
             if(r == 3 && cont3 < 4) cont3++;           
         }
         atual = populacao.clone();
+        melhor = populacao.clone();
+        melhor[16] = 1000;
+        
     }
     
+    /**
+     * seleciona duas posicoes aleatorias e troca elas, sempre usa o melhor como base
+     */
     public void mutar(){
         Random rand = new Random();
         int t1 = rand.nextInt(16);
@@ -515,14 +530,32 @@ public class Agente {
     
     public boolean aptdar(){
         int soma0=0,soma1=0,soma2=0,soma3=0;
+        int[] somas = new int[4];
         for(int i=0;i<16;i++){
-            if(atual[i] == 0) soma0 += listaSacos.get(i).getMoedas();
-            if(atual[i] == 1) soma1 += listaSacos.get(i).getMoedas();
-            if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
-            if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
+//            if(atual[i] == 0) soma0 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 0) somas[0] += listaSacos.get(i).getMoedas();
+//            if(atual[i] == 1) soma1 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 1) somas[1] += listaSacos.get(i).getMoedas();
+//            if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
+            if(atual[i] == 2) somas[2] += listaSacos.get(i).getMoedas();
+//            if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
+            if(atual[i] == 3) somas[3] += listaSacos.get(i).getMoedas();           
         }
-        int diferenca = Math.abs(soma0+soma1)-Math.abs(soma2+soma3);
+//        int diferenca = Math.abs((Math.abs(soma0+soma1))-(Math.abs(soma2+soma3)));
+
+        int difA = 0;
+        int d;
+        //Soma a diferenca de todos com todos
+        for(int t=0;t<4;t++){
+            d = somas[t];
+            for(int g=0;g<4;g++){
+                difA += Math.abs(d-somas[g]);
+            }
+        }
+        
+        int diferenca = difA;
         atual[16] = diferenca;
+
         if(diferenca == 0){
             melhor = atual.clone();
             return true;
@@ -566,6 +599,7 @@ public class Agente {
         if(tipo == 1){
             System.out.println("SUCESSO: Agente conseguiu sair do labirinto!");
             mostraPontuacao();
+            desenhaDistribuicao();
 //            for(Elemento e:listaElementos){
 //                if(e.getTipo() == TipoElemento.Bau){
 //                    System.out.println("Bau: "+e.getMoedas());
@@ -587,13 +621,21 @@ public class Agente {
         
     }
     
-    public void desenhaMelhor(){
-        for(int x=0;x<4;x++)
-        for(int i=0;i<16;i++){
-            if(melhor[i] == x){
-                System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+    public void desenhaDistribuicao(){
+        int soma = 0;
+        System.out.println("Distribuicao:");
+        for(int x=0;x<4;x++){
+            soma = 0;
+            for(int i=0;i<16;i++){
+                if(melhor[i] == x){
+                    System.out.print("["+listaSacos.get(i).getMoedas()+"]");
+                    soma += listaSacos.get(i).getMoedas();
+//                    System.out.print("["+melhor[i]+"]");
+                }
+                
             }
-            
+            System.out.println(" Bau "+(x+1)+" ["+soma+"]");
+            soma = 0;
         }
         System.out.println();
     }
