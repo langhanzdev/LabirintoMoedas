@@ -13,20 +13,22 @@ public class Elemento {
     
     private TipoElemento tipo;
     private int id;
+    private int posicao;
     private int x;
     private int y;
     private boolean isAdd;
     private boolean isVisitado;
     private int moedas;
 
-    public Elemento(TipoElemento tipo, int id, int x, int y) {
+    public Elemento(TipoElemento tipo, int posicao, int x, int y) {
         this.tipo = tipo;
-        this.id = id;
+//        this.id = id;
         this.x = x;
         this.y = y;
         this.isAdd = false;
         this.isVisitado = false;
         this.moedas = 0;
+        this.posicao = posicao;
     }
 
     public boolean isIsVisitado() {
@@ -63,12 +65,12 @@ public class Elemento {
         this.tipo = tipo;
     }
 
-    public int getId() {
-        return id;
+    public int getPosicao() {
+        return posicao;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setPosicao(int posicao) {
+        this.posicao = posicao;
     }
 
     public int getX() {

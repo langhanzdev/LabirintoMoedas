@@ -24,7 +24,7 @@ public class Agente {
     private LabirintoMoedas labirinto;
     private int pontos;
     
-    private final int sleep = 100;
+    private final int sleep = 300;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -155,9 +155,9 @@ public class Agente {
                     melhorCaminho = caminho;
                 }
                 andaCaminho(caminho);
-                while (caminho.parent != null) {
-                    caminho = caminho.parent;
-                }
+//                while (caminho.parent != null) {
+//                    caminho = caminho.parent;
+//                }
 
 
     }
@@ -216,6 +216,7 @@ public class Agente {
     public int andaCaminho(Nodo caminho) throws InterruptedException{
         if(caminho == null) return 0;
         int retorno = andaCaminho(caminho.parent);
+        detector();
         Elemento e = temElemento(caminho.x,caminho.y);
         if(retorno == 1 && e != null && e.getTipo() == TipoElemento.Buraco){
             return -1;
@@ -246,20 +247,24 @@ public class Agente {
     public void detector(){
         Elemento e;
         e = temElemento(getX(),getY());
-        if(e != null && e.getTipo() == TipoElemento.Saco){
+        
+        // Se ele esta em cima de um saco, recolhe e contabiliza
+        if(e != null && e.getTipo() == TipoElemento.Saco){ 
             labirinto.listaElementos.remove(e);
             listaElementos.remove(e);
             pontos += e.getMoedas()*10;
             listaSacos.add(e);
         }
         
+        //Escolhe uma direção aleatoria de vez em quando, mesmo sem bater em nada
         if(e == null){
             Random rand = new Random();
-            if(rand.nextInt(10) == 0){
+            if(rand.nextInt(20) == 0){
                 setDirecao(novaDirecao());
             }
         }
                
+        // Detecta vizinhos
         e = temElemento(getX(), getY()+1);
         addLista(e);
         e = temElemento(getX(), getY()+2);
@@ -306,7 +311,7 @@ public class Agente {
                     if(e.getTipo() == TipoElemento.Buraco){ //Pula buraco
                         switch(getDirecao()){
                             case 0:
-                            if(temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco && y+2 < labirinto.n-1){
+                            if((temElemento(x, y+1) == null || temElemento(x, y+1).getTipo() == TipoElemento.Bau || temElemento(x, y+1).getTipo() == TipoElemento.Saco) && y+2 < labirinto.n){
                                 setY(getY()+1);
                                 pontos += 30;
                                 return true;
@@ -314,21 +319,21 @@ public class Agente {
                             
                             break;
                         case 1:
-                            if(temElemento(x+1, y) == null || temElemento(x+1, y).getTipo() == TipoElemento.Bau || temElemento(x+1, y).getTipo() == TipoElemento.Saco && x+2 < labirinto.n-1){
+                            if((temElemento(x+1, y) == null || temElemento(x+1, y).getTipo() == TipoElemento.Bau || temElemento(x+1, y).getTipo() == TipoElemento.Saco) && x+2 < labirinto.n){
                                 setX(getX()+1);
                                 pontos += 30;
                                 return true;
                             }
                             break;
                         case 2:
-                            if(temElemento(x, y-1) == null || temElemento(x, y-1).getTipo() == TipoElemento.Bau || temElemento(x, y-1).getTipo() == TipoElemento.Saco && y-2 >= 0){
+                            if((temElemento(x, y-1) == null || temElemento(x, y-1).getTipo() == TipoElemento.Bau || temElemento(x, y-1).getTipo() == TipoElemento.Saco) && y-2 >= 0){
                                 setY(getY()-1);
                                 pontos += 30;
                                 return true;
                             }
                             break;
                         case 3:
-                            if(temElemento(x-1, y) == null || temElemento(x-1, y).getTipo() == TipoElemento.Bau || temElemento(x-1, y).getTipo() == TipoElemento.Saco && x-2 >= 0){
+                            if((temElemento(x-1, y) == null || temElemento(x-1, y).getTipo() == TipoElemento.Bau || temElemento(x-1, y).getTipo() == TipoElemento.Saco) && x-2 >= 0){
                                 setX(getX()-1);
                                 pontos += 30;
                                 return true;

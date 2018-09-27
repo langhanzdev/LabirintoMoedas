@@ -156,7 +156,7 @@ public class LabirintoMoedas {
                     y = rand.nextInt(n-5);
                     x = rand.nextInt(n-1);
                     for(int i=y;(i-y < 5);i++){
-                        if(!isLivre(x,i) || isColadoParedao(x, i, 0) || isFrentePorta(x,i,0)){
+                        if(!isLivre(x,i) || isColadoParedao(x, i, 0) || isFrentePorta(x,i,0) || temMuroAninhado(x, i, 0)){
                             ok = false;
                             break;
                         }
@@ -164,7 +164,7 @@ public class LabirintoMoedas {
                     
                 }while(!ok);
                 for(int i=y;(i-y < 5);i++){
-                    listaElementos.add(new Elemento(TipoElemento.Parede, i, x, i));
+                    listaElementos.add(new Elemento(TipoElemento.Parede, posicao, x, i));
                 }
             }else{ // Horizontal
                 do{
@@ -172,7 +172,7 @@ public class LabirintoMoedas {
                     y = rand.nextInt(n-1);
                     x = rand.nextInt(n-5);
                     for(int i=x;i-x<5;i++){
-                        if(!isLivre(i,y) || isColadoParedao(i, y, 1) || isFrentePorta(i,y,1)){
+                        if(!isLivre(i,y) || isColadoParedao(i, y, 1) || isFrentePorta(i,y,1) || temMuroAninhado(i, y, 1)){
                             ok = false;
                             break;
                         }
@@ -180,10 +180,31 @@ public class LabirintoMoedas {
                     
                 }while(!ok);
                 for(int i=x;i-x<5;i++){
-                    listaElementos.add(new Elemento(TipoElemento.Parede, i, i, y));
+                    listaElementos.add(new Elemento(TipoElemento.Parede, posicao, i, y));
                 }
             }
         }
+    }
+    
+    /**
+     * Verifica se ja tem um muro na mesma posicao e na mesma linha/coluna
+     * @param x
+     * @param y
+     * @param posicao
+     * @return 
+     */
+    public boolean temMuroAninhado(int x, int y, int posicao){
+        
+        for(Elemento e:listaElementos){
+            if(e.getTipo() == TipoElemento.Parede && e.getPosicao() == posicao && posicao == 0 && (e.getX() == x || e.getX() == x+1 || e.getX() == x-1)){
+                return true;
+            }
+            if(e.getTipo() == TipoElemento.Parede && e.getPosicao() == posicao && posicao == 1 && (e.getY() == y || e.getY() == y+1 || e.getY() == y+1)){
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**
@@ -195,7 +216,7 @@ public class LabirintoMoedas {
             do{
                 y = rand.nextInt(n);
                 x = rand.nextInt(n);
-            }while(!isLivre(x, y));
+            }while(!isLivre(x, y) && (isFrentePorta(x, y, 0) || isFrentePorta(x, y, 1)));
             listaElementos.add(new Elemento(TipoElemento.Buraco, i, x, y));
         }
     }
