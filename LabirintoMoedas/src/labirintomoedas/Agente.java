@@ -24,7 +24,7 @@ public class Agente {
     private LabirintoMoedas labirinto;
     private int pontos;
     
-    private final int sleep = 300;
+    private final int sleep = 100;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -484,7 +484,7 @@ public class Agente {
 //        System.out.println("############# GENETICO #######################");
         melhor[16] = 1000;
         popular();
-        for(int i=0;i < 1000;i++){
+        for(int i=0;i < 10000;i++){
             mutar();
             if(aptdar()){
                 
@@ -531,6 +531,12 @@ public class Agente {
         int b = atual[t2];
         atual[t1] = b;
         atual[t2] = a;
+        int bau = rand.nextInt(4);
+        int pos;
+        do{
+            pos = rand.nextInt(16);
+        }while(atual[pos] == bau);
+        atual[pos] = bau;
     }
     
     public boolean aptdar(){
@@ -562,13 +568,17 @@ public class Agente {
         atual[16] = diferenca;
 
         if(diferenca == 0){
-            melhor = atual.clone();
+            melhor = atual.clone(); // Elitiza
             return true;
         }
         if(diferenca < melhor[16]){
-            melhor = atual.clone();
+            melhor = atual.clone(); // Elitiza
         }
         return false;
+    }
+    
+    public void torneio(){
+        
     }
     
     // ---- Auxiliares ----------------------------------------------------------
