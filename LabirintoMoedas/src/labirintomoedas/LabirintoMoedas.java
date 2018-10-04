@@ -290,6 +290,11 @@ public class LabirintoMoedas {
      * Gera sacos de moedas no mapa
      */
     public void geraSacos(){
+        ArrayList<Integer> valores = new ArrayList<>();
+//        int valor[] = {9,27,21,50,16,41,50,4,17,37,49,6,44,19,10,28};
+//        int valor[] = {100,200,300,400,100,200,300,400,100,200,300,400,100,200,300,400};
+        int valor[] = {100,200,300,400,130,170,360,340,50,250,390,310,75,225,220,480};
+        
         int x,y;
         for(int i=0;i<16;i++){
             do{
@@ -297,7 +302,15 @@ public class LabirintoMoedas {
             x = rand.nextInt(n);
             }while(!isLivre(x, y));
             Elemento e = new Elemento(TipoElemento.Saco, i, x, y);
-            e.setMoedas(rand.nextInt(50)+1);
+            int a = 0;
+            int p;
+            do{
+                p = rand.nextInt(16);
+                a = valor[p];
+            }while(a == 0);
+            valor[p] = 0;
+//            e.setMoedas(rand.nextInt(50)+1);
+            e.setMoedas(a);
             listaElementos.add(e);
         }
     }

@@ -24,7 +24,7 @@ public class Agente {
     private LabirintoMoedas labirinto;
     private int pontos;
     
-    private final int sleep = 100;
+    private final int sleep = 500;
 
     public Agente(int x, int y) {
         this.x = x;
@@ -88,7 +88,7 @@ public class Agente {
                 }
                 
             }
-            
+            detector();
             if(abriuPorta()){
                 mostraMensagemFinal(1);
                 return;
@@ -170,8 +170,6 @@ public class Agente {
         switch(getDirecao()){
             case 0:
                 if(isLivre(getX(), getY()+1)){
-
-
                     setY(getY()+1);
                 }else{
                     setDirecao(novaDirecao());
@@ -205,6 +203,7 @@ public class Agente {
                 }
                 break;
         }
+        detector();
     }
     
     /**
@@ -267,22 +266,16 @@ public class Agente {
         // Detecta vizinhos
         e = temElemento(getX(), getY()+1);
         addLista(e);
-        e = temElemento(getX(), getY()+2);
-        addLista(e);
+        
         e = temElemento(getX(), getY()-1);
         addLista(e);
         e = temElemento(getX(), getY()-1);
         addLista(e);
         e = temElemento(getX()+1, getY());
-        addLista(e);
-        e = temElemento(getX()+2, getY());
-        addLista(e);
+        addLista(e);    
         e = temElemento(getX()-1, getY());
         addLista(e);
-        e = temElemento(getX()-2, getY());
-        addLista(e);
-        
-        e = temElemento(getX()-1, getY()+1);
+         e = temElemento(getX()-1, getY()+1);
         addLista(e);
         e = temElemento(getX()+1, getY()+1);
         addLista(e);
@@ -290,6 +283,16 @@ public class Agente {
         addLista(e);
         e = temElemento(getX()-1, getY()-1);
         addLista(e);
+        e = temElemento(getX()-2, getY());
+        addLista(e);
+        e = temElemento(getX(), getY()+2);
+        addLista(e);
+        e = temElemento(getX(), getY()-2);
+        addLista(e);
+        e = temElemento(getX()+2, getY());
+        addLista(e);
+        
+       
         
     }
   
@@ -484,14 +487,13 @@ public class Agente {
 //        System.out.println("############# GENETICO #######################");
         melhor[16] = 1000;
         popular();
-        for(int i=0;i < 10000;i++){
+        int c = 0;
+        while(!aptdar() || c < 200000){
             mutar();
-            if(aptdar()){
-                
-                return true;
-            }
+            c++;
+            
         }
-
+        
         return false;
     }
     
@@ -527,10 +529,12 @@ public class Agente {
         int t1 = rand.nextInt(16);
         int t2 = rand.nextInt(16);
         atual = melhor.clone();
+        // Troca duas posiçoes aleatorias
         int a = atual[t1];
         int b = atual[t2];
         atual[t1] = b;
         atual[t2] = a;
+        // Troca um saco de bau aleatoriamente
         int bau = rand.nextInt(4);
         int pos;
         do{
@@ -539,17 +543,17 @@ public class Agente {
         atual[pos] = bau;
     }
     
+    /**
+     * Faz o somatorio da diferença de todos os baus com todos os baus
+     * @return 
+     */
     public boolean aptdar(){
-        int soma0=0,soma1=0,soma2=0,soma3=0;
+//        int soma0=0,soma1=0,soma2=0,soma3=0;
         int[] somas = new int[4];
         for(int i=0;i<16;i++){
-//            if(atual[i] == 0) soma0 += listaSacos.get(i).getMoedas();
             if(atual[i] == 0) somas[0] += listaSacos.get(i).getMoedas();
-//            if(atual[i] == 1) soma1 += listaSacos.get(i).getMoedas();
             if(atual[i] == 1) somas[1] += listaSacos.get(i).getMoedas();
-//            if(atual[i] == 2) soma2 += listaSacos.get(i).getMoedas();
-            if(atual[i] == 2) somas[2] += listaSacos.get(i).getMoedas();
-//            if(atual[i] == 3) soma3 += listaSacos.get(i).getMoedas();           
+            if(atual[i] == 2) somas[2] += listaSacos.get(i).getMoedas();          
             if(atual[i] == 3) somas[3] += listaSacos.get(i).getMoedas();           
         }
 //        int diferenca = Math.abs((Math.abs(soma0+soma1))-(Math.abs(soma2+soma3)));
@@ -567,11 +571,11 @@ public class Agente {
         int diferenca = difA;
         atual[16] = diferenca;
 
-        if(diferenca == 0){
+        if(diferenca == 0){ // Achou a resposta
             melhor = atual.clone(); // Elitiza
             return true;
         }
-        if(diferenca < melhor[16]){
+        if(diferenca < melhor[16]){ // Achou um melhor
             melhor = atual.clone(); // Elitiza
         }
         return false;
